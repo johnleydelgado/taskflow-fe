@@ -1,10 +1,10 @@
-// app/components/EditTaskModal.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-undef */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { Fragment, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
 import { useUsers } from "~/api/user.query";
 import { useForm, Controller } from "react-hook-form";
@@ -21,7 +21,7 @@ export interface TaskForm {
 interface EditTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: TaskForm) => void;
+  onSave: (data: TaskForm) => Promise<any> | void;
   initialData: TaskForm;
 }
 
@@ -36,18 +36,21 @@ export default function EditTaskModal({
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<TaskForm>({
     defaultValues: initialData,
   });
-  const { data: users, isLoading } = useUsers();
 
-  // Reset when modal closes or initialData changes
+  const { data: users, isLoading: loadingUsers } = useUsers();
+  const userOptions: Option[] =
+    users?.map((u) => ({ value: u.email, label: u.email })) ?? [];
+
+  // Reset form when closed or when initialData changes
   useEffect(() => {
     if (!isOpen) reset(initialData);
   }, [isOpen, initialData, reset]);
 
-  // Lock scroll
+  // Prevent background scrolling
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
@@ -55,20 +58,21 @@ export default function EditTaskModal({
     };
   }, [isOpen]);
 
-  const userOptions: Option[] =
-  users?.map((u) => ({ value: u.email, label: u.email })) ?? [];
-
-  const onSubmit = (data: TaskForm) => {
-     onSave(data);
-  };
-
   if (!isOpen) return null;
 
+  const onSubmit = async (data: TaskForm) => {
+    await onSave(data);
+  };
 
   return createPortal(
     <Fragment>
-      <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 z-50"
+        onClick={onClose}
+      />
 
+      {/* Modal */}
       <form
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         onSubmit={handleSubmit(onSubmit)}
@@ -80,7 +84,8 @@ export default function EditTaskModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 text-gray-500 hover:bg-main-9 rounded-full hover:text-white"
+              disabled={isSubmitting}
+              className="p-1 text-gray-500 hover:bg-main-9 rounded-full hover:text-white disabled:opacity-50"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -88,7 +93,7 @@ export default function EditTaskModal({
 
           {/* Body */}
           <div className="px-6 py-4 space-y-4">
-            {/* Email */}
+            {/* Assignee Email */}
             <div>
               <label
                 htmlFor="task-email"
@@ -96,7 +101,7 @@ export default function EditTaskModal({
               >
                 Assignee Email
               </label>
-              {isLoading ? (
+              {loadingUsers ? (
                 <div>Loading emails…</div>
               ) : (
                 <Controller
@@ -112,6 +117,7 @@ export default function EditTaskModal({
                       styles={customStyles}
                       onChange={(val) => field.onChange(val)}
                       value={field.value}
+                      isDisabled={isSubmitting}
                     />
                   )}
                 />
@@ -138,7 +144,9 @@ export default function EditTaskModal({
                   maxLength: { value: 80, message: "Max length is 80" },
                 })}
                 type="text"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black disabled:opacity-50"
+                placeholder="Enter title"
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">
@@ -162,7 +170,9 @@ export default function EditTaskModal({
                   maxLength: { value: 500, message: "Max length is 500" },
                 })}
                 rows={4}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black disabled:opacity-50"
+                placeholder="Describe the task…"
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">
@@ -177,15 +187,24 @@ export default function EditTaskModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center"
             >
-              Save Changes
+              {isSubmitting ? (
+                <>
+                  <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </button>
           </div>
         </div>

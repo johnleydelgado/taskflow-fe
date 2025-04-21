@@ -1,11 +1,11 @@
 /* eslint-disable no-undef */
-// app/components/TaskModal.tsx
- 
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import React, { Fragment, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
 import { useUsers } from "~/api/user.query";
 import { useForm, Controller } from "react-hook-form";
@@ -22,7 +22,7 @@ export interface TaskForm {
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: TaskForm) => void;
+  onSave: (data: TaskForm) => Promise<any> | void;
 }
 
 export default function TaskModal({
@@ -34,16 +34,17 @@ export default function TaskModal({
     control,
     register,
     handleSubmit,
-    reset, 
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<TaskForm>({
     defaultValues: { email: [], title: "", description: "" },
   });
 
-  const { data: users, isLoading } = useUsers();
+  const { data: users, isLoading: loadingUsers } = useUsers();
   const userOptions: Option[] =
     users?.map((u) => ({ value: u.email, label: u.email })) ?? [];
 
+  // lock background scroll
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
@@ -51,17 +52,15 @@ export default function TaskModal({
     };
   }, [isOpen]);
 
-
+  // reset form when closed
   useEffect(() => {
-    if (!isOpen) {
-      reset();
-    }
+    if (!isOpen) reset();
   }, [isOpen, reset]);
 
   if (!isOpen) return null;
 
-  const onSubmit = (data: TaskForm) => {
-    onSave(data);
+  const submitHandler = async (data: TaskForm) => {
+    await onSave(data);
   };
 
   return createPortal(
@@ -75,7 +74,7 @@ export default function TaskModal({
       {/* Modal */}
       <form
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(submitHandler)}
       >
         <div className="bg-white rounded-lg shadow-lg w-full max-w-md overflow-hidden">
           {/* Header */}
@@ -85,6 +84,7 @@ export default function TaskModal({
               type="button"
               onClick={onClose}
               className="p-1 text-gray-500 hover:text-gray-700"
+              disabled={isSubmitting}
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -100,7 +100,7 @@ export default function TaskModal({
               >
                 Assignee Email
               </label>
-              {isLoading ? (
+              {loadingUsers ? (
                 <div>Loading emails…</div>
               ) : (
                 <Controller
@@ -116,6 +116,7 @@ export default function TaskModal({
                       styles={customStyles}
                       onChange={(val) => field.onChange(val)}
                       value={field.value}
+                      isDisabled={isSubmitting}
                     />
                   )}
                 />
@@ -139,13 +140,11 @@ export default function TaskModal({
                 id="task-title"
                 {...register("title", {
                   required: "Title is required",
-                  maxLength: {
-                    value: 80,
-                    message: "Max length is 80",
-                  },
+                  maxLength: { value: 80, message: "Max 80 characters" },
                 })}
                 type="text"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black disabled:opacity-50"
                 placeholder="Enter title"
               />
               {errors.title && (
@@ -167,13 +166,11 @@ export default function TaskModal({
                 id="task-desc"
                 {...register("description", {
                   required: "Description is required",
-                  maxLength: {
-                    value: 500,
-                    message: "Max length is 500",
-                  },
+                  maxLength: { value: 500, message: "Max 500 characters" },
                 })}
                 rows={4}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black"
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-50 border-main-9 text-main-black disabled:opacity-50"
                 placeholder="Describe the task…"
               />
               {errors.description && (
@@ -189,15 +186,24 @@ export default function TaskModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center"
             >
-              Save Task
+              {isSubmitting ? (
+                <>
+                  <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                "Save Task"
+              )}
             </button>
           </div>
         </div>

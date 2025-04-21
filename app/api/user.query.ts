@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import { fetchAllUsers,createNewUser, loginUser } from "./user.api";
 import type { UserLogin } from "./user.types";
 
@@ -14,8 +14,12 @@ export const useCreateTask = () => {
 };
 
 
-export const useLoginUser = () => {
-    return useMutation<UserLogin, Error, { email: string; password: string }>({
-      mutationFn: loginUser,
-    });
+export const useLoginUser = (): UseMutationResult<
+  UserLogin,
+  Error,
+  { email: string; password: string }
+> => {
+  return useMutation<UserLogin, Error, { email: string; password: string }>({
+    mutationFn: loginUser,
+  });
 };
