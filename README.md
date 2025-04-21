@@ -1,87 +1,64 @@
-# Welcome to React Router!
+# Task Flow
 
-A modern, production-ready template for building full-stack React applications using React Router.
+A lightweight front-end demo for the Front-End Developer Technical Assessment: a link-based task approval system. This React app allows a manager to view and manage tasks, send approval emails, and handle user responses via tokenized links. Intended only for local development and experimentation.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Project Overview
 
-## Features
+**Objective:** Build a full-stack web application where a manager can create tasks, assign them to users by email, and receive approvals or rejections through a unique tokenized email link.  
+**This front-end repo** implements the UI using React and React Router v7.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Tech Stack
+
+- **Frontend:** React 19, React Router v7  
+- **State & Data Fetching:** @tanstack/react-query, axios  
+- **Forms:** react-hook-form  
+- **Styling:** Tailwind CSS, Heroicons  
+- **Tooling:** Vite, TypeScript, ESLint
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js v18+  
+- npm v9+  
+
 ### Installation
 
-Install the dependencies:
-
 ```bash
+git clone https://github.com/johnleydelgado/taskflow-fe.git
+cd taskflow-fe
 npm install
 ```
 
-### Development
+### Environment Variables
 
-Start the development server with HMR:
+> You will receive a `.env` file with the necessary configuration variables. Place this file at the project root before running any scripts.
+
+### Development
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Launches the Vite-powered dev server with React Router’s dev tools.  
+Visit <http://localhost:5173> to explore.
 
-## Building for Production
+> **Note:** Since this is a demo front-end, only the local `dev` workflow is officially supported here.
 
-Create a production build:
+## Available Scripts
 
-```bash
-npm run build
-```
+- `npm run dev` — Start the app in watch mode for local development.  
+- `npm run build` — Compile production artifacts into `./build`.  
+- `npm run start` — Serve the built app via React Router’s server-side renderer.  
+- `npm run typecheck` — Generate route types & run the TypeScript compiler.  
+- `npm run lint` / `npm run lint:fix` — Run ESLint (auto-fix mode available).
 
-## Deployment
+## Features (Front-End)
 
-### Docker Deployment
+- **Dashboard:** View tasks and their statuses.  
+- **Task Form:** Create, edit, and delete tasks.  
+- **Email Preview:** Preview the tokenized approval link.  
+- **Response Pages:** Simulated landing pages for approve/reject actions.
 
-To build and run using Docker:
+MIT © Johnley Delgado
 
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
